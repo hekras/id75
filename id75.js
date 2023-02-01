@@ -1,3 +1,21 @@
+function shuffle(array) {
+    let currentIndex = array.length, randomIndex;
+
+    // While there remain elements to shuffle.
+    while (currentIndex != 0) {
+
+        // Pick a remaining element.
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+
+        // And swap it with the current element.
+        [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex], array[currentIndex]];
+    }
+
+    return array;
+}
+
 function letter(str) {
     var lstr = str.split("|");
     dc.fillStyle = "beige";
@@ -73,6 +91,16 @@ function star(){
     dc.stroke();
 }
 
+function image(){
+    var big_image = document.getElementById("picture");
+    dc.fillStyle = "beige";
+    dc.fillRect(0, 0, size, size);
+    dc.save();
+//    dc.scale(0.5,0.5);
+    dc.drawImage(big_image, 0, 0);
+    dc.restore();
+}
+
 var statemachine = -1;
 var tick=0;
 var tickmax=255;
@@ -80,6 +108,7 @@ var title_arr = [];
 var circle_arr = [];
 var star_arr = [];
 var heart_arr = [];
+var face_arr = [];
 var particles = [];
 
 function scanner(arr){
@@ -117,14 +146,19 @@ function animate_array(to_array, from_array, color, d) {
 function animateloop() {
     switch(statemachine){
         case 0:
-            letter("HELLO WORLD|2023|PARTICLES|NEXT LEVEL|BY HENRYK.DK|AND SON");
-            scanner(title_arr);
             circle(180);
             scanner(circle_arr);
             star();
             scanner(star_arr);
+            shuffle(star_arr);
             heart()
             scanner(heart_arr);
+            shuffle(heart_arr);
+            image();
+            scanner(face_arr);
+            shuffle(face_arr);
+            letter("HELLO WORLD|2023|PARTICLES|NEXT LEVEL|BY HENRYK.DK|AND SON");
+            scanner(title_arr);
             for(var n=0;n<5000;n++){
                 var m = Math.floor(Math.random()*title_arr.length);
                 var angle = 6.28*Math.random();
@@ -136,9 +170,15 @@ function animateloop() {
                 });
             }
             statemachine++;
+            tick=0;
 //            statemachine=-1;
             break;
         case 1:
+            statemachine++;
+            tick=0;
+//            statemachine=-1;
+            break;
+        case 2:
             dc.clearRect(0, 0, size, size);
             dc.save();
             dc.beginPath();
@@ -164,7 +204,7 @@ function animateloop() {
                 tick = 0;
             }
             break;
-        case 2:
+        case 3:
             dc.clearRect(0, 0, width, height);
             animate_array(particles, circle_arr, "black", 0.5 + 0.5 * Math.cos(3.14 * tick / tickmax));
             if (tick>tickmax){
@@ -172,7 +212,7 @@ function animateloop() {
                 tick=0;
             }
            break;
-        case 3:
+        case 4:
             dc.clearRect(0, 0, width, height);
             animate_array( circle_arr, star_arr, "black", 0.5 + 0.5 * Math.cos(3.14 * tick / tickmax));
             if (tick>tickmax){
@@ -180,9 +220,17 @@ function animateloop() {
                 tick=0;
             }
            break;
-        case 4:
+        case 5:
             dc.clearRect(0, 0, width, height);
             animate_array( star_arr, heart_arr, "black", 0.5 + 0.5 * Math.cos(3.14 * tick / tickmax));
+            if (tick>tickmax){
+                statemachine++;
+                tick=0;
+            }
+           break;
+        case 6:
+            dc.clearRect(0, 0, width, height);
+            animate_array( heart_arr, face_arr, "black", 0.5 + 0.5 * Math.cos(3.14 * tick / tickmax));
             if (tick>tickmax){
                 statemachine++;
                 tick=0;
