@@ -45,6 +45,17 @@ function circle(radius) {
     dc.stroke();
 }
 
+function square() {
+    dc.fillStyle = "beige";
+    dc.fillRect(0, 0, size, size);
+    dc.strokeStyle = "black";
+    dc.fillStyle = "black";
+    dc.lineWidth = 10.0;
+    dc.beginPath();
+    dc.rect(20,20, size-40, size-40);
+    dc.stroke();
+}
+
 function heart(){
     dc.fillStyle = "beige";
     dc.fillRect(0, 0, size, size);
@@ -72,7 +83,7 @@ function star(){
     dc.lineWidth = 10.0;
     dc.beginPath();
     var a=0;
-    var r1=0.5;
+    var r1=0.45;
     var r2=0.1;
     var x1 = size/2 + size*r1*Math.cos(6.28*a/14);
     var y1 = size/2 + size*r1*Math.sin(6.28*a/14);
@@ -96,7 +107,7 @@ function image(){
     dc.fillStyle = "beige";
     dc.fillRect(0, 0, size, size);
     dc.save();
-//    dc.scale(0.5,0.5);
+    dc.scale(0.5,0.5);
     dc.drawImage(big_image, 0, 0);
     dc.restore();
 }
@@ -109,6 +120,7 @@ var circle_arr = [];
 var star_arr = [];
 var heart_arr = [];
 var face_arr = [];
+var square_arr = [];
 var particles = [];
 
 function scanner(arr){
@@ -157,6 +169,9 @@ function animateloop() {
             image();
             scanner(face_arr);
             shuffle(face_arr);
+            square();
+            scanner(square_arr);
+            shuffle(square_arr);
             letter("HELLO WORLD|2023|PARTICLES|NEXT LEVEL|BY HENRYK.DK|AND SON");
             scanner(title_arr);
             for(var n=0;n<5000;n++){
@@ -176,7 +191,6 @@ function animateloop() {
         case 1:
             statemachine++;
             tick=0;
-//            statemachine=-1;
             break;
         case 2:
             dc.clearRect(0, 0, size, size);
@@ -231,6 +245,22 @@ function animateloop() {
         case 6:
             dc.clearRect(0, 0, width, height);
             animate_array( heart_arr, face_arr, "black", 0.5 + 0.5 * Math.cos(3.14 * tick / tickmax));
+            if (tick>tickmax){
+                statemachine++;
+                tick=0;
+            }
+           break;
+        case 7:
+            dc.clearRect(0, 0, width, height);
+            animate_array( face_arr, square_arr, "black", 0.5 + 0.5 * Math.cos(3.14 * tick / tickmax));
+            if (tick>tickmax){
+                statemachine++;
+                tick=0;
+            }
+           break;
+        case 8:
+            dc.clearRect(0, 0, width, height);
+            animate_array( square_arr, title_arr, "black", 0.5 + 0.5 * Math.cos(3.14 * tick / tickmax));
             if (tick>tickmax){
                 statemachine++;
                 tick=0;
