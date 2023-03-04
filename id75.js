@@ -107,7 +107,8 @@ function image(){
     dc.fillStyle = "beige";
     dc.fillRect(0, 0, size, size);
     dc.save();
-    dc.scale(0.5,0.5);
+    dc.scale(1.6,1.6);
+    dc.translate(-25,0);
     dc.drawImage(big_image, 0, 0);
     dc.restore();
 }
@@ -140,15 +141,17 @@ function animate_array(to_array, from_array, color, d) {
     if (from_array.length > to_array.length) {
         for (var i = 0; i < from_array.length; i++) {
             var bi = Math.floor(to_array.length * i / from_array.length);
-            dc.moveTo(from_array[i].p.x * (1 - d) + to_array[bi].p.x * d, from_array[i].p.y * (1 - d) + to_array[bi].p.y * d);
-            dc.arc(from_array[i].p.x * (1 - d) + to_array[bi].p.x * d, from_array[i].p.y * (1 - d) + to_array[bi].p.y * d, 1, 0, 6.28);
+            var c = [from_array[i].p.x + (to_array[bi].p.x - from_array[i].p.x) * d, from_array[i].p.y + (to_array[bi].p.y - from_array[i].p.y) * d];
+            dc.moveTo(...c);
+            dc.arc(...c, 1, 0, 6.28);
         }
     }
     else {
         for (var i = 0; i < to_array.length; i++) {
             var ai = Math.floor(from_array.length * i / to_array.length);
-            dc.moveTo(from_array[ai].p.x * (1 - d) + to_array[i].p.x * d, from_array[ai].p.y * (1 - d) + to_array[i].p.y * d);
-            dc.arc(from_array[ai].p.x * (1 - d) + to_array[i].p.x * d, from_array[ai].p.y * (1 - d) + to_array[i].p.y * d, 1, 0, 6.28);
+            var c = [from_array[ai].p.x * (1 - d) + to_array[i].p.x * d, from_array[ai].p.y * (1 - d) + to_array[i].p.y * d];
+            dc.moveTo(...c);
+            dc.arc(...c, 1, 0, 6.28);
         }
     }
     dc.closePath();
@@ -172,8 +175,14 @@ function animateloop() {
             square();
             scanner(square_arr);
             shuffle(square_arr);
-            letter("HELLO WORLD|2023|PARTICLES|NEXT LEVEL|BY HENRYK.DK|AND SON");
+            letter("HELLO WORLD|2023|PARTICLES|NEXT LEVEL|BY HENRYK.DK");
             scanner(title_arr);
+            statemachine++;
+            tick=0;
+//            statemachine=-1;
+            break;
+        case 1:
+            particles = [];
             for(var n=0;n<5000;n++){
                 var m = Math.floor(Math.random()*title_arr.length);
                 var angle = 6.28*Math.random();
@@ -184,11 +193,6 @@ function animateloop() {
                     count: Math.floor(10*Math.random()),
                 });
             }
-            statemachine++;
-            tick=0;
-//            statemachine=-1;
-            break;
-        case 1:
             statemachine++;
             tick=0;
             break;
@@ -260,9 +264,9 @@ function animateloop() {
            break;
         case 8:
             dc.clearRect(0, 0, width, height);
-            animate_array( square_arr, title_arr, "black", 0.5 + 0.5 * Math.cos(3.14 * tick / tickmax));
+            animate_array( square_arr, particles, "black", 0.5 + 0.5 * Math.cos(3.14 * tick / tickmax));
             if (tick>tickmax){
-                statemachine++;
+                statemachine=2;
                 tick=0;
             }
            break;
