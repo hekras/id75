@@ -13,8 +13,8 @@ window.addEventListener('load', function() {
             this.effect = effect;
             //this.x = Math.random() * this.effect.canvasWidth;
             //this.y = Math.random() * this.effect.canvasHeight;
-            this.x = Math.random() * this.effect.canvasWidth;
-            this.y = this.effect.canvasHeight;
+            this.x = 0;
+            this.y = Math.random() * this.effect.canvasHeight;
             this.originX = x;
             this.originY = y;
             this.size = this.effect.gap;
@@ -26,8 +26,8 @@ window.addEventListener('load', function() {
             this.force = 0;
             this.angle = 0;
             this.distance = 0;
-            this.friction = Math.random() * 0.6 + 0.15;
-            this.ease = Math.random() * 0.1 + 0.005;
+            this.friction = Math.random() * 0.2 + 0.15;
+            this.ease = Math.random() * 0.5 + 0.005;
         }
         update(){
             this.dx = this.effect.mouse.x - this.x;
@@ -41,6 +41,17 @@ window.addEventListener('load', function() {
             }
             this.x += (this.vx *= this.friction) + (this.originX - this.x) * this.ease;
             this.y += (this.vy *= this.friction) + (this.originY - this.y) * this.ease;
+        }
+        updateMus(){
+          this.dx = this.effect.mus.x - this.x;
+          this.dy = this.effect.mus.y - this.y;
+          this.distance = this.dx * this.dx + this.dy * this.dy;
+          this.force = -this.effect.mus.radius / this.distance;
+          this.angle = Math.atan2(this.dy, this.dx);
+          this.vx += this.force * Math.cos(this.angle) * 0.005;
+          this.vy += this.force * Math.sin(this.angle) * 0.005;
+          this.x += this.vx;
+          this.y += this.vy;
         }
         draw(){
           // only change colours when this colour is different than previous
@@ -88,6 +99,7 @@ window.addEventListener('load', function() {
       }
   
       class Effect {
+        static tick = 0;
         constructor(context, canvasWidth, canvasHeight){
           this.context = context;
           this.canvasWidth = canvasWidth;
@@ -106,16 +118,40 @@ window.addEventListener('load', function() {
             const b = 127 + Math.floor(128 * Math.random());
             this.spiral.push(new SpiralParticle(this,0,0,"rgb(" + r + "," + g + "," + b + ")"));
           }
+
+          this.context.clearRect(0,0,this.canvasWidth,this.canvasHeight);
+          this.letter("Hello world|From all of us|To all of you");
           this.particles = [];
-          this.gap = 3;
+          this.gap = 5;
           this.mouse = {
-              radius: 20000,
-              x: 0,
-              y: 0
-          }
+            radius: 20000,
+            x: 0,
+            y: 0
+        }
+        this.mus = {
+          radius: 200000,
+          x: this.canvasWidth/2,
+          y: this.canvasHeight/2
+        }
+        this.convertToParticles();
           window.addEventListener("mousemove", e => {
               this.mouse.x = e.x;
               this.mouse.y = e.y;
+          });
+        }
+        letter(str) {
+          var lstr = str.split("|");
+          this.context.strokeStyle = "black";
+          this.context.fillStyle = "black";
+          this.context.lineWidth = 1.0;
+          this.context.font = "148px Russo One";
+          var dy = 150;
+          var ysize = dy*lstr.length;
+          var y = (this.canvasHeight-ysize)/2 + dy;
+          lstr.forEach(element => {
+              var w = this.context.measureText(element).width;
+              this.context.fillText(element, (this.canvasWidth-w)/2, y);
+              y+=dy;
           });
         }
         convertToParticles(){
@@ -141,10 +177,21 @@ window.addEventListener('load', function() {
             particle.update();
             particle.draw();
           })
-          this.particles.forEach(particle => {
-            particle.update();
-            particle.draw();
-          })
+
+          if (Effect.tick < 250){
+            this.particles.forEach(particle => {
+              particle.update();
+              particle.draw();
+            })
+          } else if (Effect.tick < 1500){
+            this.particles.forEach(particle => {
+              particle.updateMus();
+              particle.draw();
+            })
+          }
+
+
+          Effect.tick++;
         }
       }
       
