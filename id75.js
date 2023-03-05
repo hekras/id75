@@ -53,6 +53,21 @@ window.addEventListener('load', function() {
           this.x += this.vx;
           this.y += this.vy;
         }
+        updateBoom(){
+          this.dx = this.effect.mus.x - this.x;
+          this.dy = this.effect.mus.y - this.y;
+          this.distance = this.dx * this.dx + this.dy * this.dy;
+          this.force = -2-Math.random()*4;
+          this.angle = Math.atan2(this.dy, this.dx);
+          this.vx += this.force * Math.cos(this.angle);
+          this.vy += this.force * Math.sin(this.angle);
+          this.x += this.vx;
+          this.y += this.vy;
+        }
+        updateBoom2(){
+            this.x += this.vx;
+            this.y += this.vy;
+        }
         draw(){
           // only change colours when this colour is different than previous
           this.effect.context.fillStyle = this.color;
@@ -183,11 +198,28 @@ window.addEventListener('load', function() {
               particle.update();
               particle.draw();
             })
-          } else if (Effect.tick < 1500){
+          } else if (Effect.tick < 1000){
             this.particles.forEach(particle => {
               particle.updateMus();
               particle.draw();
+            }) 
+          } else if (Effect.tick < 1250){
+            this.particles.forEach(particle => {
+              particle.update();
+              particle.draw();
             })
+          } else if (Effect.tick < 1251){
+            this.particles.forEach(particle => {
+              particle.updateBoom();
+              particle.draw();
+            }) 
+          } else if (Effect.tick < 2000){
+            this.particles.forEach(particle => {
+              particle.updateBoom2();
+              particle.draw();
+            }) 
+          }else {
+            Effect.tick = 0;
           }
 
 
