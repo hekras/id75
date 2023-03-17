@@ -4,233 +4,225 @@ window.addEventListener('load', function() {
       const dc = canvas.getContext('2d', {
         willReadFrequently: true
       });
-      console.log(dc)
+      const gap = 2;
+ //     console.log(dc)
       canvas.width = window.innerWidth-10;
       canvas.height = window.innerHeight-10;
 
-      class Particle {
-        constructor(effect, x, y, color){
-            this.effect = effect;
-            //this.x = Math.random() * this.effect.canvasWidth;
-            //this.y = Math.random() * this.effect.canvasHeight;
-            this.x = 0;
-            this.y = Math.random() * this.effect.canvasHeight;
-            this.originX = x;
-            this.originY = y;
-            this.size = this.effect.gap;
-            this.color = color;
-            this.dx = 0;
-            this.dy = 0;
-            this.vx = 0;
-            this.vy = 0;
-            this.force = 0;
-            this.angle = 0;
-            this.distance = 0;
-            this.friction = Math.random() * 0.2 + 0.15;
-            this.ease = Math.random() * 0.5 + 0.005;
-        }
-        update(){
-            this.dx = this.effect.mouse.x - this.x;
-            this.dy = this.effect.mouse.y - this.y;
-            this.distance = this.dx * this.dx + this.dy * this.dy;
-            this.force = -this.effect.mouse.radius / this.distance;
-            if(this.distance < this.effect.mouse.radius) {
-                this.angle = Math.atan2(this.dy, this.dx);
-                this.vx += this.force * Math.cos(this.angle);
-                this.vy += this.force * Math.sin(this.angle);
-            }
-            this.x += (this.vx *= this.friction) + (this.originX - this.x) * this.ease;
-            this.y += (this.vy *= this.friction) + (this.originY - this.y) * this.ease;
-        }
-        updateMus(){
-          this.dx = this.effect.mus.x - this.x;
-          this.dy = this.effect.mus.y - this.y;
-          this.distance = this.dx * this.dx + this.dy * this.dy;
-          this.force = -this.effect.mus.radius / this.distance;
-          this.angle = Math.atan2(this.dy, this.dx);
-          this.vx += this.force * Math.cos(this.angle) * 0.005;
-          this.vy += this.force * Math.sin(this.angle) * 0.005;
-          this.x += this.vx;
-          this.y += this.vy;
-        }
-        updateBoom(){
-          this.dx = this.effect.mus.x - this.x;
-          this.dy = this.effect.mus.y - this.y;
-          this.distance = this.dx * this.dx + this.dy * this.dy;
+      class Particle{
+        constructor(x,y,color){
+          this.x = x;
+          this.y = y;
+          this.color = color;
+          this.dx = canvas.width/2 - this.x;
+          this.dy = canvas.height/2 - this.y;
           this.force = -2-Math.random()*4;
           this.angle = Math.atan2(this.dy, this.dx);
-          this.vx += this.force * Math.cos(this.angle);
-          this.vy += this.force * Math.sin(this.angle);
-          this.x += this.vx;
-          this.y += this.vy;
-        }
-        updateBoom2(){
-            this.x += this.vx;
-            this.y += this.vy;
+          this.vx = this.force * Math.cos(this.angle);
+          this.vy = this.force * Math.sin(this.angle);
         }
         draw(){
-          // only change colours when this colour is different than previous
-          this.effect.context.fillStyle = this.color;
-          this.effect.context.fillRect(this.x, this.y, this.size, this.size);
-        }
-      }
-  
-      class SpiralParticle {
-        static tick = 0.1;
-        constructor(effect, x, y, color){
-            this.effect = effect;
-            //this.x = Math.random() * this.effect.canvasWidth;
-            //this.y = Math.random() * this.effect.canvasHeight;
-            this.x = this.effect.canvasWidth / 2;
-            this.y = this.effect.canvasHeight / 2;
-            this.size = 2 + Math.random()*8;
-            this.color = color;
-            this.angle = 6.28 * Math.random();
-            this.velocity = 2 + Math.random()*8;
-            this.vx = this.velocity * Math.cos(this.angle);
-            this.vy = this.velocity * Math.sin(this.angle);
+          dc.fillStyle = this.color;
+          dc.fillRect(this.x,this.y,gap,gap);
         }
         update(){
           this.x += this.vx;
           this.y += this.vy;
-          if ((this.x < 0)||(this.y < 0)||(this.x > this.effect.canvasWidth)||(this.y > this.effect.canvasHeight)){
-            this.x = this.effect.canvasWidth / 2;
-            this.y = this.effect.canvasHeight / 2;
-            this.size = 2 + Math.random()*8;
-            this.angle = 0.1 * Math.random() + SpiralParticle.tick;
-            SpiralParticle.tick += 0.05;// * Math.random();
-            this.velocity = 8 + Math.random()*2;
-            this.vx = this.velocity * Math.cos(this.angle);
-            this.vy = this.velocity * Math.sin(this.angle);
-          }
         }
-        draw(){
-          // only change colours when this colour is different than previous
-          this.effect.context.fillStyle = this.color;
-          this.effect.context.beginPath();
-          this.effect.context.arc(this.x, this.y, this.size, 0, 6.28);
-          this.effect.context.fill();
+        downdate(){
+          this.x -= this.vx;
+          this.y -= this.vy;
         }
       }
-  
-      class Effect {
-        static tick = 0;
-        constructor(context, canvasWidth, canvasHeight){
-          this.context = context;
-          this.canvasWidth = canvasWidth;
-          this.canvasHeight = canvasHeight;
-          this.maxTextWidth = this.canvasWidth * 0.8;
-          this.fontSize = 100;
-          this.textVerticalOffset = 0;
-          this.lineHeight = this.fontSize * 1.2;
-          this.textX = this.canvasWidth / 2;
-          this.textY = this.canvasHeight / 2 - this.lineHeight / 2;
-          
-          this.spiral = [];
-          for(let i=0;i<250;i++){
-            const r = 127 + Math.floor(128 * Math.random());
-            const g = 127 + Math.floor(128 * Math.random());
-            const b = 127 + Math.floor(128 * Math.random());
-            this.spiral.push(new SpiralParticle(this,0,0,"rgb(" + r + "," + g + "," + b + ")"));
-          }
-
-          this.context.clearRect(0,0,this.canvasWidth,this.canvasHeight);
-          this.letter("Hello world|From all of us|To all of you");
-          this.particles = [];
-          this.gap = 5;
-          this.mouse = {
-            radius: 20000,
-            x: 0,
-            y: 0
-        }
-        this.mus = {
-          radius: 200000,
-          x: this.canvasWidth/2,
-          y: this.canvasHeight/2
-        }
-        this.convertToParticles();
-          window.addEventListener("mousemove", e => {
-              this.mouse.x = e.x;
-              this.mouse.y = e.y;
-          });
-        }
-        letter(str) {
-          var lstr = str.split("|");
-          this.context.strokeStyle = "black";
-          this.context.fillStyle = "black";
-          this.context.lineWidth = 1.0;
-          this.context.font = "148px Russo One";
-          var dy = 150;
-          var ysize = dy*lstr.length;
-          var y = (this.canvasHeight-ysize)/2 + dy;
-          lstr.forEach(element => {
-              var w = this.context.measureText(element).width;
-              this.context.fillText(element, (this.canvasWidth-w)/2, y);
-              y+=dy;
-          });
-        }
-        convertToParticles(){
-          this.particles = [];
-          const pixels = this.context.getImageData(0, 0, this.canvasWidth, this.canvasHeight).data;
-          for(let y = 0; y < this.canvasHeight; y += this.gap) {
-              for(let x = 0; x < this.canvasWidth; x += this.gap) {
-                  const index = (y * this.canvasWidth + x) * 4;
-                  const alpha = pixels[index + 3];
-                  if(alpha > 0) {
-                    const red = pixels[index];
-                    const green = pixels[index + 1];
-                    const blue = pixels[index + 2];
-                    const color = 'rgb(' + red + ',' + green + ',' + blue + ')';
-                    this.particles.push(new Particle(this, x, y, color));
-                  }
-              }
-          }
-          this.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
-        }
-        render(){
-          this.spiral.forEach(particle => {
-            particle.update();
-            particle.draw();
-          })
-
-          if (Effect.tick < 250){
-            this.particles.forEach(particle => {
-              particle.update();
-              particle.draw();
-            })
-          } else if (Effect.tick < 1000){
-            this.particles.forEach(particle => {
-              particle.updateMus();
-              particle.draw();
-            }) 
-          } else if (Effect.tick < 1250){
-            this.particles.forEach(particle => {
-              particle.update();
-              particle.draw();
-            })
-          } else if (Effect.tick < 1251){
-            this.particles.forEach(particle => {
-              particle.updateBoom();
-              particle.draw();
-            }) 
-          } else if (Effect.tick < 2000){
-            this.particles.forEach(particle => {
-              particle.updateBoom2();
-              particle.draw();
-            }) 
-          }else {
-            Effect.tick = 0;
-          }
-
-
-          Effect.tick++;
-        }
+      function fillText(str) {
+        var lstr = str.split("|");
+        dc.strokeStyle = "black";
+        dc.fillStyle = "black";
+        dc.lineWidth = 1.0;
+        dc.font = "148px Russo One";
+        var dy = 150;
+        var ysize = dy*lstr.length;
+        var y = (canvas.height-ysize)/2 + dy;
+        lstr.forEach(element => {
+            var w = dc.measureText(element).width;
+            dc.fillText(element, (canvas.width-w)/2, y);
+            y+=dy;
+        });
       }
-      
-      let effect = new Effect(dc, canvas.width, canvas.height);
+      function textToArray(str) {
+        dc.clearRect(0,0,canvas.width,canvas.height);
+        fillText(str);
+        let arr = [];
+        const pixels = dc.getImageData(0, 0, canvas.width, canvas.height).data;
+        for(let y = 0; y < canvas.height; y += gap) {
+            for(let x = 0; x < canvas.width; x += gap) {
+                const index = (y * canvas.width + x) * 4;
+                const alpha = pixels[index + 3];
+                if(alpha > 0) {
+                  const red = pixels[index];
+                  const green = pixels[index + 1];
+                  const blue = pixels[index + 2];
+                  const color = 'rgb(' + red + ',' + green + ',' + blue + ')';
+                  arr.push(new Particle(x, y, color));
+                }
+            }
+        }
+        return arr;
+      }
+
+      const flag = new Image();
+      flag.src = "./images/denmark-flag-medium.png";
+      const madebytext = "Made by|henryk.dk|March 2023";
+      let happybdtext = "Tillykke med|fødselsdagen";
+      let madebytextarray = textToArray(madebytext);
+      let happybdtextarray = textToArray(happybdtext);
+      for(let i=0;i<251;i++){
+        happybdtextarray.forEach(e=>{
+          e.update();
+        })
+      }
+      for(let i=0;i<251;i++){
+        madebytextarray.forEach(e=>{
+          e.update();
+        })
+      }
+      let state = 0;
+      let tick;
       function animate() {
-        dc.clearRect(0, 0, canvas.width, canvas.height);
-        effect.render();
+        // dc.clearRect(0, 0, canvas.width, canvas.height);
+        dc.clearRect(0,0,canvas.width,canvas.height);
+
+        dc.fillStyle = "black";
+        dc.font = "14px Russo One";
+//        dc.fillText("State="+state+" tick:"+tick, 20, 20);
+
+        switch(state){
+          case 0:
+            state++;
+            tick = 250;
+            break;
+          case 1:
+            madebytextarray.forEach(e=>{
+              e.downdate();
+              e.draw();
+            });
+            if (--tick < 0){
+              tick = 200;
+              state++;
+            }
+            break;
+          case 2:
+            fillText(madebytext);
+            if (--tick < 0){
+              tick = 149;
+              state++;
+            }
+            break;
+          case 3:
+            fillText(madebytext);
+            happybdtextarray.forEach(e=>{
+              e.downdate();
+              e.draw();
+            });
+            if (--tick < 0){
+              tick = 100;
+              state++;
+            }
+            break;
+          case 4:
+            madebytextarray.forEach(e=>{
+              e.update();
+              e.draw();
+            });
+            happybdtextarray.forEach(e=>{
+              e.downdate();
+              e.draw();
+            });
+            if (--tick < 0){
+              tick = 250;
+              state++;
+            }
+            break;
+          case 5:
+            madebytextarray.forEach(e=>{
+              e.update();
+              e.draw();
+            });
+            fillText(happybdtext)
+            if (--tick < 0){
+              star = [];
+              for (var i = 0; i < 30; i++) {
+                  star[i] = {
+                      x: Math.random() * canvas.width,
+                      y: -200-Math.random() * canvas.height,
+                      dy: Math.random() * 5,
+                      size: 0.2,
+                      dsize: 1 - 0.01 * Math.random(),
+                      maxscale: 0.1,
+                      targetangle: 0.5,
+                      dangle: Math.random() * 0.03,
+                      mangle: Math.random() * 3.1457,
+                  };
+              }
+              state++;
+            }
+            break;
+          case 6:
+            for (var i = 0; i < star.length; i+=2) {
+              dc.save();
+              dc.translate(star[i].x, star[i].y);
+              var scale = star[i].size;
+              dc.scale(scale, scale);
+              dc.rotate(star[i].mangle);
+              dc.translate(-flag.width / 2, - flag.height / 2);
+              dc.drawImage(flag, 0, 0);
+              dc.restore();
+              star[i].y += star[i].dy;
+              star[i].mangle += star[i].dangle;
+              star[i].size *= star[i].dsize;
+              if ((star[i].y > canvas.height + 80.0) || (star[i].size < 0.005)) {
+                  star[i] = {
+                      x: Math.random() * canvas.width,
+                      y: -200,
+                      dy: 1.5 + Math.random() * 8,
+                      size: 0.2,
+                      dsize: 1 - 0.01 * Math.random(),
+                      maxscale: 0.1,
+                      targetangle: 0.5,
+                      dangle: 0.1 * (Math.random() - 0.5),
+                      mangle: Math.random() * 3.1457,
+                  };
+              }
+            }
+            fillText(happybdtext)
+            for (var i = 1; i < star.length; i+=2) {
+              dc.save();
+              dc.translate(star[i].x, star[i].y);
+              var scale = star[i].size;
+              dc.scale(scale, scale);
+              dc.rotate(star[i].mangle);
+              dc.translate(-flag.width / 2, - flag.height / 2);
+              dc.drawImage(flag, 0, 0);
+              dc.restore();
+              star[i].y += star[i].dy;
+              star[i].mangle += star[i].dangle;
+              star[i].size *= star[i].dsize;
+              if ((star[i].y > canvas.height + 80.0) || (star[i].size < 0.005)) {
+                  star[i] = {
+                      x: Math.random() * canvas.width,
+                      y: -200,
+                      dy: 1.5 + Math.random() * 8,
+                      size: 0.2,
+                      dsize: 1 - 0.01 * Math.random(),
+                      maxscale: 0.1,
+                      targetangle: 0.5,
+                      dangle: 0.1 * (Math.random() - 0.5),
+                      mangle: Math.random() * 3.1457,
+                  };
+              }
+            }
+            break;
+          }
         requestAnimationFrame(animate);
       }
       animate();
@@ -238,6 +230,5 @@ window.addEventListener('load', function() {
       window.addEventListener('resize', function(){
         canvas.width = window.innerWidth-10;
         canvas.height = window.innerHeight-10;
-          effect = new Effect(dc, canvas.width, canvas.height);
       });
   });
